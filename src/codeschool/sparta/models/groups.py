@@ -1,9 +1,11 @@
 from django.utils.translation import ugettext_lazy as _
 from django.db import IntegrityError
+from django.apps import apps
 
 from codeschool import models
-from codeschool.utils.phrases import phrase
+from codeschool.utils.phrases import phrase, random_sparta_phrase
 from itertools import cycle
+
 
 
 class SpartaGroup(models.TimeStampedModel):
@@ -11,21 +13,11 @@ class SpartaGroup(models.TimeStampedModel):
     Represents a group of students in a Sparta activity.
     """
 
-    STATUS_ACTIVE = 0
-    STATUS_INACTIVE = 1
-
     activity = models.ForeignKey('SpartaActivity', related_name='groups')
     name = models.CharField(
         _('Name'),
         blank=True,
-        max_length=140,
-    )
-    status = models.IntegerField(
-        default=STATUS_INACTIVE,
-        choices=[
-            (STATUS_INACTIVE, _('inactive')),
-            (STATUS_ACTIVE, _('active')),
-        ]
+        max_length=40,
     )
     members = models.ManyToManyField(
         models.User,
@@ -60,34 +52,11 @@ class SpartaGroup(models.TimeStampedModel):
         max_iter = 10
         for n in range(max_iter):
             try:
-                self.name = phrase()
+                self.name = random_sparta_phrase()
                 return super().save(*args, **kwargs)
             except IntegrityError:
                 if n == max_iter - 1:
                     raise
-
-    def add_users(self, users, quantity_tutors):
-        """
-        Add new user to group.
-
-        Args:
-             user:
-                A django user.
-             role (str):
-                The user role on the group 'learner' or 'tutor'.
-        """
-        # Irá atribuir a role tutor ao usuario com maior nota, adiciona-lo ao grupo e exclui-lo do dicionario
-        for _ in quantity_tutors:
-            user_grade_max = max(users, key=users.get)
-            role = ROLE_MAPPING[ROLE_TUTOR]
-            SpartaMembership.objects.create(group=self, user=user_grade_max, role=role)
-            users.pop(user_grade_max)
-
-        # Irá adicionar a role learner aos usuarios restantes, adiciona-los ao grupo e excluir do dicionario
-        for user in users:
-            role = ROLE_MAPPING[ROLE_LEARNER]
-            SpartaMembership.objects.create(group=self, user=user, role=role)
-            users.pop(user)
 
 
 class SpartaMembership(models.TimeStampedModel):
@@ -97,6 +66,10 @@ class SpartaMembership(models.TimeStampedModel):
 
     ROLE_TUTOR = 0
     ROLE_LEARNER = 1
+    ROLE_MAPPING = {
+        'learner': ROLE_LEARNER,
+        'tutor': ROLE_TUTOR,
+    }
 
     user = models.ForeignKey(models.User, related_name='+')
     group = models.ForeignKey(SpartaGroup, related_name='+')
@@ -112,10 +85,6 @@ class SpartaMembership(models.TimeStampedModel):
             ('user', 'group', 'role'),
         ]
 
-ROLE_MAPPING = {
-    'learner': SpartaMembership.ROLE_LEARNER,
-    'tutor': SpartaMembership.ROLE_TUTOR,
-}
 
 
 def organize_groups(mapping, group_size):
@@ -167,3 +136,38 @@ def organize_groups(mapping, group_size):
         groups[j][name] = grade
         j += 1
     return groups
+
+
+def create_unique_phrases(n):
+    phrases = {random_sparta_phrase() for _ in range(n)}
+    while len(phrases) < n:
+        phrases.add(random_sparta_phrase())
+    return list(phrases)
+
+
+def create_initial_groups(activity):
+    """
+    Create the initial groups for an Sparta Activity.
+    """
+    user_grades = activity.user_grades.all()
+    mapping = {user_id: grade for user_id, grade in user_grades.values_list('user', 'grade')}
+    groups = organize_groups(mapping, activity.groups_size)
+
+    # Inserting all sparta groups in bulk
+    phrases = create_unique_phrases(len(groups))
+    group_objects = [SpartaGroup(activity=activity, name=phrase) for phrase in phrases]
+    SpartaGroup.objects.bulk_create(group_objects)
+    group_objects = SpartaGroup.objects.filter(activity=activity)
+
+    # Inserting group members in bulk
+    members = []
+    for mapping, group in zip(groups, group_objects):
+        for user_id, user_grade in mapping.items():
+            if user_grade >= activity.grade_threshold:
+                role = SpartaMembership.ROLE_TUTOR
+            else:
+                role = SpartaMembership.ROLE_LEARNER
+            membership = SpartaMembership(user_id=user_id, group=group, role=role)
+            members.append(membership)
+
+    SpartaMembership.objects.bulk_create(members)

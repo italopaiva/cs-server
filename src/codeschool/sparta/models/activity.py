@@ -8,11 +8,28 @@ import io
 from numbers import Number
 
 
-class SpartaActivity(Activity):
+class SpartaActivity(models.TimeStampedModel):
     """
     Represents a sparta activity.
     """
-    description = models.TextField()
+    STATUS_PENDING = -1
+    STATUS_ONGOING = 0
+    STATUS_FINISHED = 1
+    STATUS_CHOICES = [
+        (STATUS_PENDING, _('Waiting for grades')),
+        (STATUS_ONGOING, _('Ongoing')),
+        (STATUS_FINISHED, _('Finished')),
+    ]
+
+    teacher = models.ForeignKey(User, related_name='spartas')
+    status = models.SmallIntegerField(choices=STATUS_CHOICES, default=STATUS_PENDING)
+    groups_size = models.SmallIntegerField(default=4)
+    title = models.CharField(max_length=140)
+    description = models.TextField(blank=True)
+    grade_threshold = models.FloatField(
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        default=50
+    )
 
     class Meta:
         verbose_name = _('Sparta Activity')

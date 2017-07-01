@@ -24,6 +24,9 @@ adjective_list = [
     'grumpy', 'heroic', 'coward', 'brave', 'treacherous', 'powerful',
     'influential',
 ]
+sparta_characters = [
+    'Leônidas', 'Xerxes',
+]
 phrase_groups = []
 
 
@@ -64,6 +67,13 @@ def random_scientist_phrase():
     Random phrase using important scientists.
     """
     return subjective_adjective_phrase(famous_scientists)
+
+@is_phase_provider
+def random_sparta_phrase():
+    """
+    Random phrase using 300 (the movie) characters.
+    """
+    return subjective_adjective_phrase(sparta_characters)
 
 
 @is_phase_provider
