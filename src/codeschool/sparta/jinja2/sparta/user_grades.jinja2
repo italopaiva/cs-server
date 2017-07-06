@@ -1,0 +1,39 @@
+{% extends 'base.jinja2' %}
+
+{% block content_title %}
+  {{ _('Sparta students grades') }}
+{% endblock %}
+
+{% block content_body %}
+  {% if grades %}
+    <h3>{{ _('Those are the grades registered for the sparta ') }} '{{activity.title}}'</h3>
+    <br>
+
+    <form action="{{ url('sparta_update_user_grades', kwargs={'activity_id': activity.pk}) }}" method="POST">
+      {{ csrf_input }}
+      <table>
+        <thead>
+          <tr>
+            <th>{{ _('Student') }}</th>
+            <th>{{ _('Grade') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user_grade in grades %}
+            <tr>
+              <td>{{ user_grade.user.username }}</td>
+              <td>
+                <input type="hidden" name="students[]" value="{{ user_grade.user.pk }}"/>
+                <input type="number" min=0 max=100 step="0.1" name="grades[]" value="{{ user_grade.grade }}"/>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <button class="mdl-button mdl-button--raised" type="submit">{{ _('Save grades') }}</button>
+    </form>
+  {% else %}
+    {{ _('No grades registered for this Sparta.') }}.
+  {% endif %}
+{% endblock %}

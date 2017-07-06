@@ -7,7 +7,6 @@ from codeschool.utils.phrases import phrase, random_sparta_phrase
 from itertools import cycle
 
 
-
 class SpartaGroup(models.TimeStampedModel):
     """
     Represents a group of students in a Sparta activity.

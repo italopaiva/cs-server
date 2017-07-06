@@ -1,9 +1,10 @@
+from django.db import transaction
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import ugettext_lazy as _
 import csv
 from codeschool import models
 from codeschool.lms.activities.models import Activity
-from django.core.validators import MinValueValidator, MaxValueValidator
 import io
 from numbers import Number
 
@@ -109,6 +110,29 @@ class UserGrade(models.Model):
     class Meta:
         unique_together = [('activity', 'user')]
 
+
+    @classmethod
+    @transaction.atomic
+    def update_activity_grades(cls, activity, mapping):
+        """
+        Update the students grades of an activity.
+        Args:
+            activity (SpartaActivity):
+                A SpartaActivity model object that is the
+                activity which grades will be updated.
+            mapping (dict):
+                A dictionary containing the user id as key
+                and the new grade as value.
+
+        Returns: the activity user grades with the grades up to date.
+        """
+        user_grades = cls.objects.filter(activity=activity)
+        for user_grade in user_grades:
+            user_id = str(user_grade.user.pk)
+            if user_id in mapping:
+                user_grade.grade = mapping[user_id]
+                user_grade.save()
+        return user_grades
 
 def read_csv_file(csv_data):
     """
