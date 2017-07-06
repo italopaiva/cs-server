@@ -3,6 +3,8 @@ from bricks.contrib.mdl import button, div
 from bricks.html5 import ul, li, a, i, select, option, input, table, tbody, thead, th, td, tr
 from codeschool.bricks import navbar as _navbar, navsection
 from .bricks import navbar, layout, activities_layout
+from .forms import CsvUploadForm
+from .models import SpartaActivity
 
 # Create your views here.
 def index(request):
@@ -66,3 +68,31 @@ def rating(request):
     ]
     }
     return render(request, 'sparta/rating.jinja2', ctx)
+
+
+def uploadcsv(request, activity_id):
+    activity = SpartaActivity.objects.get(pk=activity_id)
+    if request.POST:
+        form = CsvUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            file_data = request.FILES['csv_file'].read().decode('utf-8').strip()
+
+            var = activity.populate_from_csv(file_data, commit=False)
+            import pdb; pdb.set_trace()
+            return HttpResponseRedirect('/success/url/')
+        ctx = {
+            'content_title':'Upload de CSV de notas!',
+            'content_body': ul(class_="demo-list-icon mdl-list"),
+            'form': form,
+            'activity_id': activity_id
+        }
+        return render(request, 'sparta/uploadcsv.jinja2', ctx)
+    else:
+        form = CsvUploadForm()
+        ctx = {
+            'content_title':'Upload de CSV de notas',
+            'content_body': ul(class_="demo-list-icon mdl-list"),
+            'form': form,
+            'activity_id': activity_id
+        }
+    return render(request, 'sparta/uploadcsv.jinja2', ctx)
