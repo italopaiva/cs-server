@@ -22,6 +22,7 @@
           <tr>
             <th>{{ _('Student') }}</th>
             <th>{{ _('Grade') }}</th>
+            <th>{{ _('Actions') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -31,6 +32,11 @@
               <td>
                 <input type="hidden" name="students[]" value="{{ user_grade.user.pk }}"/>
                 <input type="number" min=0 max=100 step="0.1" name="grades[]" value="{{ user_grade.grade }}"/>
+              </td>
+              <td>
+                <a href="{{ url('sparta_delete_user_grade',  kwargs={'user_grade_id': user_grade.pk}) }}">
+                  <i class="material-icons">delete</i>
+                </a>
               </td>
             </tr>
           {% endfor %}

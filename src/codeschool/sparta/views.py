@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext as _
 from django.views.generic import View
@@ -120,6 +120,16 @@ def user_grade_view(request, activity_id):
         return update_user_grade(request, activity)
     else:
         return get_user_grades(request, activity)
+
+@login_required
+def delete_user_grade_view(request, user_grade_id):
+    user_grade = get_object_or_404(UserGrade, pk=user_grade_id)
+    if not request.user == user_grade.activity.teacher:
+        # User grades can only be deleted by their activity teacher
+        redirect('sparta_index')
+    user_grade.delete()
+    messages.success(request, _('User grade deleted with success!'))
+    return redirect('sparta_user_grades', activity_id=user_grade.activity.pk)
 
 
 class NewUserGradeView(View):
