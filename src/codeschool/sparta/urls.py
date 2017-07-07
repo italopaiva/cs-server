@@ -9,4 +9,5 @@ urlpatterns = [
     url(r'^(?P<activity_id>[0-9]+)/uploadcsv$', views.uploadcsv, name='sparta_uploadcsv'),
     url(r'^(?P<activity_id>[0-9]+)/user_grade$', views.user_grade_view, name='sparta_user_grades'),
     url(r'^(?P<activity_id>[0-9]+)/user_grade/update$', views.user_grade_view, name='sparta_update_user_grades'),
+    url(r'^(?P<activity_id>[0-9]+)/user_grade/new$', views.NewUserGradeView.as_view(), name='sparta_new_user_grade'),
 ]

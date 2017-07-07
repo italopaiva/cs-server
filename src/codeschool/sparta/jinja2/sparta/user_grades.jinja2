@@ -9,6 +9,10 @@
     <h3>{{ _('Those are the grades registered for the sparta ') }} '{{activity.title}}'</h3>
     <br>
 
+    <a class="mdl-button" href="{{ url('sparta_new_user_grade', kwargs={'activity_id': activity.pk}) }}">
+      <i class="material-icons">group_add</i> {{ _('Add new student and grade') }}
+    </a>
+
     <form action="{{ url('sparta_update_user_grades', kwargs={'activity_id': activity.pk}) }}" method="POST">
       {{ csrf_input }}
       <table>

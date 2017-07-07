@@ -6,8 +6,9 @@ from django.views.generic import View
 from bricks.contrib.mdl import button, div
 from bricks.html5 import ul, li, a, i, select, option, input, table, tbody, thead, th, td, tr
 from codeschool.bricks import navbar as _navbar, navsection
+from codeschool.models import User
 from .bricks import navbar, layout, activities_layout
-from .forms import CsvUploadForm
+from .forms import CsvUploadForm, NewUserGradeForm
 from .models import UserGrade, SpartaActivity
 
 # Create your views here.
@@ -120,3 +121,34 @@ def user_grade_view(request, activity_id):
         return update_user_grade(request, activity)
     else:
         return get_user_grades(request, activity)
+
+
+class NewUserGradeView(View):
+    """
+    View to handle new user grade requests.
+    """
+    form = NewUserGradeForm
+
+    @method_decorator(login_required)
+    def get(self, request, activity_id):
+        activity = SpartaActivity.objects.get(pk=activity_id)
+        ctx = {
+            'activity': activity,
+            'form': self.form()
+        }
+        return render(request, 'sparta/new_user_grade.jinja2', ctx)
+
+    @method_decorator(login_required)
+    def post(self, request, activity_id):
+        activity = SpartaActivity.objects.get(pk=activity_id)
+        user_grade = UserGrade(activity=activity)
+        form = self.form(data=request.POST, instance=user_grade)
+        if form.is_valid():
+            form.save()
+            return redirect('sparta_user_grades', activity_id=activity.pk)
+        else:
+            ctx = {
+                'activity': activity,
+                'form': form
+            }
+            return render(request, 'sparta/new_user_grade.jinja2', ctx)
