@@ -105,6 +105,24 @@
 
                                 {% block content_sessions %}
                                     <section>
+                                        {% block flash_messages %}
+                                            <style type="text/css">
+                                                .alert-success {
+                                                    color: green;
+                                                }
+                                                .alert-error {
+                                                    color: red;
+                                                }
+                                                .alert-warning {
+                                                    color: yellow;
+                                                }
+                                            </style>
+                                            {% for message in messages() %}
+                                                <div class="alert-{{message.tags}}">
+                                                    <p align="center"><strong>{{message}}</strong></p>
+                                                </div>
+                                            {% endfor %}
+                                        {% endblock %}
                                         {% block content_body %}
                                             {{ content_body }}
                                         {% endblock %}

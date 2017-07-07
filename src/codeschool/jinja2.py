@@ -3,6 +3,7 @@ from functools import singledispatch
 from logging import Logger
 
 from django.contrib.staticfiles.storage import staticfiles_storage
+from django.contrib.messages import get_messages
 from django.core.urlresolvers import reverse
 from django.utils.html import escape
 from django.utils.translation import ugettext, ungettext
@@ -169,6 +170,10 @@ def finalize(obj):
         return ''
     return obj
 
+@contextfunction
+def messages(ctx):
+    request = ctx['request']
+    return get_messages(request)
 
 def environment(**options):
     """
@@ -186,6 +191,7 @@ def environment(**options):
         hooks=Hooks(),
         cfg=GlobalConfig(),
         make_nav_sections=make_nav_sections,
+        messages=messages
     )
 
     # Filters
