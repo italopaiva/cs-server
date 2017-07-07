@@ -82,19 +82,15 @@ def uploadcsv(request, activity_id):
             activity.populate_from_csv(file_data)
             return redirect('sparta_user_grades', activity_id=activity.pk)
         ctx = {
-            'content_title':'Upload de CSV de notas!',
-            'content_body': ul(class_="demo-list-icon mdl-list"),
             'form': form,
-            'activity_id': activity_id
+            'activity_id': activity_id,
         }
         return render(request, 'sparta/uploadcsv.jinja2', ctx)
     else:
         form = CsvUploadForm()
         ctx = {
-            'content_title':'Upload de CSV de notas',
-            'content_body': ul(class_="demo-list-icon mdl-list"),
             'form': form,
-            'activity_id': activity_id
+            'activity_id': activity_id,
         }
     return render(request, 'sparta/uploadcsv.jinja2', ctx)
 
