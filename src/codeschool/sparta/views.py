@@ -132,9 +132,10 @@ class NewUserGradeView(View):
     @method_decorator(login_required)
     def get(self, request, activity_id):
         activity = SpartaActivity.objects.get(pk=activity_id)
+        form = self.filter_registered_users(activity)
         ctx = {
             'activity': activity,
-            'form': self.form()
+            'form': form
         }
         return render(request, 'sparta/new_user_grade.jinja2', ctx)
 
@@ -149,6 +150,16 @@ class NewUserGradeView(View):
         else:
             ctx = {
                 'activity': activity,
-                'form': form
+                'form': self.filter_registered_users(activity, form=form)
             }
             return render(request, 'sparta/new_user_grade.jinja2', ctx)
+
+    def filter_registered_users(self, activity, form=None):
+        """Remove from form users that are already registered in the activity."""
+        if not form:
+            form = self.form()
+        registered_users = [user_grade.user.username for user_grade in activity.user_grades.all()]
+        form.fields['user'].queryset = User.objects\
+            .exclude(username__in=registered_users)\
+            .exclude(pk=activity.teacher.pk)
+        return form
