@@ -8,12 +8,26 @@
   <form action="{{ url('sparta_new_user_grade', kwargs={'activity_id': activity.pk}) }}" method="POST">
     {{ csrf_input }}
 
-    <label>{{ _('User') }}</label>
-    {{ form.user }}
-    <br>
+    <div class='mdl-form-field'>
+      <label>{{ _('User') }}</label>
+      {{ form.user }}
 
-    <label>{{ _('Grade') }}</label>
-    {{ form.grade }}
+      {% if form.errors['user'] %}
+        <div class="errors">
+          <small class="error">{{ form.errors['user'] }}</small>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class='mdl-form-field'>
+      <label>{{ _('Grade') }}</label>
+      {{ form.grade }}
+      {% if form.errors['grade'] %}
+        <div class="errors">
+          <small class="error">{{ form.errors['grade'] }}</small>
+        </div>
+      {% endif %}
+    </div>
 
     <br><br>
     <button class="mdl-button mdl-button--raised" type="submit">{{ _('Save student and grade') }}</button>
