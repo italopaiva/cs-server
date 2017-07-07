@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext as _
@@ -80,6 +81,7 @@ def uploadcsv(request, activity_id):
         if form.is_valid():
             file_data = request.FILES['csv_file'].read().decode('utf-8').strip()
             activity.populate_from_csv(file_data)
+            messages.success(request, _('Grades loaded from CSV with success!'))
             return redirect('sparta_user_grades', activity_id=activity.pk)
         ctx = {
             'form': form,
@@ -105,6 +107,7 @@ def update_user_grade(request, activity):
     grades = post_data['grades[]']
     student_grades_map = dict(zip(students, grades))
     UserGrade.update_activity_grades(activity, student_grades_map)
+    messages.success(request, _('Student grades updated with success!'))
     return redirect('sparta_user_grades', activity_id=activity.pk)
 
 @login_required
@@ -142,6 +145,7 @@ class NewUserGradeView(View):
         form = self.form(data=request.POST, instance=user_grade)
         if form.is_valid():
             form.save()
+            messages.success(request, _('Student grade registered with success!'))
             return redirect('sparta_user_grades', activity_id=activity.pk)
         else:
             ctx = {
